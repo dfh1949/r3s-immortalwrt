@@ -1,4 +1,4 @@
-name: Build OpenWrt for R3S
+name: Build ImmortalWrt for R3S
 
 on:
   schedule:
