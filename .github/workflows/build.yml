@@ -52,19 +52,19 @@ jobs:
     - name: 克隆 ImmortalWrt 源码
       run: |
         git clone https://github.com/immortalwrt/immortalwrt.git
-        cd immortalwrt
+        cd immortalwrt/
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
     - name: 恢复diffconfig
       run: |
-        cd immortalwrt
+        cd immortalwrt/
         cp -r ../config/diffconfig .config
         make defconfig
 
     - name: Overwrite kernel config
       run: |
-        cd immortalwrt
+        cd immortalwrt/
         # 注意根据你的设备实际修改路径
         cp -r ../config/config-6.6 target/linux/rockchip/armv8/config-6.6
 
@@ -72,11 +72,15 @@ jobs:
 #      run: |
 #        bash ../sh/diy-part1.sh
 
-    - name: 开始编译
+    - name: 下载
       run: |
-        cd immortalwrt
+        cd immortalwrt/
         make clean
         make download -j8 
+
+    - name: 开始编译
+      run: |
+        cd immortalwrt/
         make -j$(nproc) || { make -j1 V=s; }
 
 #    - name: Run DIY part 2 (编译后)
