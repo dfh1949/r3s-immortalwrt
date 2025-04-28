@@ -35,9 +35,9 @@ jobs:
 
     - name: 下载toolchains
       run: |
-        mkdir tools
+        mkdir tool
         axel -n 16 https://downloads.immortalwrt.org/snapshots/targets/rockchip/armv8/immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-        tar -I zstd -xf immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst -C tools
+        tar -I zstd -xf immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst -C tool
         cd tools
         mv */* .
         find . -maxdepth 1 ! -name 'toolchain*' -exec rm -rf {} \;
@@ -46,8 +46,8 @@ jobs:
     - name: 下载llvm-bpf
       run: |
         axel -n 16 https://downloads.immortalwrt.org/snapshots/targets/rockchip/armv8/llvm-bpf-18.1.7.Linux-x86_64.tar.zst
-        tar -I zstd -xf llvm-bpf-18.1.7.Linux-x86_64.tar.zst -C tools
-        sudo mv tools /opt/
+        tar -I zstd -xf llvm-bpf-18.1.7.Linux-x86_64.tar.zst -C tool
+        sudo mv tool /opt/
 
     - name: 克隆 ImmortalWrt 源码
       run: |
