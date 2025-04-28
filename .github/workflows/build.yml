@@ -78,7 +78,7 @@ jobs:
     
     
     - name: 上传重命名后的固件
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: firmware
         path: "bin/targets/armvirt/64/${NEW_FIRMWARE_NAME}"
