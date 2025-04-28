@@ -1,0 +1,70 @@
+name: Build OpenWrt for R3S
+
+on:
+  workflow_dispatch:   # 允许手动点击运行
+  schedule:
+    - cron: '0 3 * * 1' # 每周一凌晨3点UTC时间（北京时间11点）编译
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: 检出仓库
+      uses: actions/checkout@v4
+
+    - name: 准备编译环境
+      run: |
+        sudo apt update -y
+        sudo apt full-upgrade -y
+        sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+  bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+  g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+  libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \
+  libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano \
+  ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
+  python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
+  upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+
+    - name: 克隆 ImmortalWrt 源码
+      run: |
+        git clone https://github.com/immortalwrt/immortalwrt.git
+        cd immortalwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: 执行diy-part1.sh
+      run: |
+        cd immortalwrt
+        bash ../diy-part1.sh
+
+    - name: 恢复diffconfig
+      run: |
+        cd immortalwrt
+        cp -r ../config/diffconfig .config
+        make defconfig
+
+    - name: Overwrite kernel config
+      run: |
+        cd immortalwrt
+        # 注意根据你的设备实际修改路径
+        cp -r ../config-6.6 target/linux/rockchip/armv8/config-6.6
+
+
+    - name: 执行diy-part2.sh
+      run: |
+        cd immortalwrt
+        bash ../diy-part2.sh
+
+    - name: 开始编译
+      run: |
+        cd immortalwrt
+        make download -j8 || make download -j1 V=s
+        make -j$(nproc)
+
+    - name: 上传固件到Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "immortalwrt/bin/targets/**/immortalwrt-*.img.gz"
+        tag: "latest"
+        allowUpdates: true
