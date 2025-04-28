@@ -2,14 +2,12 @@ name: Build ImmortalWrt for R3S
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # 每周日凌晨12点触发编译
-  workflow_dispatch:
-  inputs:
-    trigger:
-      description: '点击按钮触发编译'
-      required: true
-      default: 'true'
-      label: '编译'
+    # 每周1次定时任务（可根据需要调整）
+    - cron: '0 0 * * 0'  # 每周日凌晨12点触发编译
+  workflow_dispatch:      # 允许手动触发编译
+    description: '点击按钮触发编译'
+    required: true
+    default: 'true'
 
 
 
