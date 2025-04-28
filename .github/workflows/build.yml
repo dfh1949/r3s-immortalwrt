@@ -38,7 +38,7 @@ jobs:
         mkdir tool
         axel -n 16 https://downloads.immortalwrt.org/snapshots/targets/rockchip/armv8/immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst
         tar -I zstd -xf immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst -C tool
-        cd tools
+        cd tool
         mv */* .
         find . -maxdepth 1 ! -name 'toolchain*' -exec rm -rf {} \;
         mv * musl/
