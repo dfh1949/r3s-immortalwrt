@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v4
 
     - name: 准备编译环境
       run: |
@@ -84,3 +84,4 @@ jobs:
         path: "bin/targets/armvirt/64/${NEW_FIRMWARE_NAME}"
         retention-days: 5
         if-no-files-found: error
+
