@@ -1,9 +1,16 @@
 name: Build OpenWrt for R3S
 
 on:
-  workflow_dispatch:   # 允许手动点击运行
   schedule:
-    - cron: '0 3 * * 1' # 每周一凌晨3点UTC时间（北京时间11点）编译
+    - cron: '0 0 * * 0' # 每周日凌晨12点触发编译
+workflow_dispatch:      # 允许手动触发编译
+  inputs:
+    trigger:
+      description: '点击按钮触发编译'
+      required: true
+      default: 'true'
+      label: '编译'  # 这里设置按钮显示的中文名称
+
 
 jobs:
   build:
