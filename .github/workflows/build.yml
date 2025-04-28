@@ -33,6 +33,21 @@ jobs:
           python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
           upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
 
+    - name: 下载toolchains
+      run: |
+        mkdir toolchain
+        wget https://downloads.immortalwrt.org/snapshots/targets/rockchip/armv8/immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+        tar -I zstd -xf immortalwrt-toolchain-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst -C toolchain
+        cd toolchain
+        mv */* .
+        find . -maxdepth 1 ! -name 'toolchain*' -exec rm -rf {} \;
+
+    - name: 设置环境变量
+      run: |
+        export PATH=$PWD/toolchain/toolchain-aarch64_generic_gcc-13.3.0_musl/bin:$PATH
+
+    
+
     - name: 克隆 ImmortalWrt 源码
       run: |
         git clone https://github.com/immortalwrt/immortalwrt.git
