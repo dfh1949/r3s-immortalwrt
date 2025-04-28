@@ -5,7 +5,7 @@ on:
     # 每周1次定时任务（可根据需要调整）
     - cron: '0 0 * * 0'  # 每周日凌晨12点触发编译
   workflow_dispatch:      # 允许手动触发编译
-    description: '点击按钮触发编译'
+    inputs: '点击按钮触发编译'
     required: true
     default: 'true'
 
@@ -62,35 +62,33 @@ jobs:
         make download -j8 
         make -j$(nproc)
 
-        
 #    - name: Run DIY part 2 (编译后)
 #      run: |
 #        bash ../sh/diy-part2.sh
 
-    - name: 文件检查
+    - name: 检查文件
       run: |
-          FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
-          if [ ! -f "$FIRMWARE_PATH" ]; then
-            echo "Firmware file not found!"
-            exit 1
-          else
-            echo "Firmware file found: $FIRMWARE_PATH"
-          fi
-
+        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+        if [ ! -f "$FIRMWARE_PATH" ]; then
+          echo "Firmware file not found!"
+          exit 1
+        else
+          echo "Firmware file found: $FIRMWARE_PATH"
+        fi
 
     - name: 按照时间戳重命名
       run: |
-        DATE=$(date +"%Y%m%d%H%M%S")
-        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
-        NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
-        mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
-        echo "Renamed firmware to: $NEW_FIRMWARE_NAME"
-
-
-     - name: 上传重命名后的固件
+         DATE=$(date +"%Y%m%d%H%M%S")
+         FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+         NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
+         mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
+         echo "Renamed firmware to: $NEW_FIRMWARE_NAME"
+    
+    
+    - name: 上传重命名后的固件
       uses: actions/upload-artifact@v2
       with:
         name: firmware
         path: "bin/targets/armvirt/64/${NEW_FIRMWARE_NAME}"
-         retention-days: 5
-         if-no-files-found: error
+        retention-days: 5
+        if-no-files-found: error
