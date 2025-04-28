@@ -39,11 +39,6 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: 执行diy-part1.sh
-      run: |
-        cd immortalwrt
-        bash ../diy-part1.sh
-
     - name: 恢复diffconfig
       run: |
         cd immortalwrt
@@ -54,23 +49,39 @@ jobs:
       run: |
         cd immortalwrt
         # 注意根据你的设备实际修改路径
-        cp -r ../config-6.6 target/linux/rockchip/armv8/config-6.6
+        cp -r ../config/config-6.6 target/linux/rockchip/armv8/config-6.6
 
-
-    - name: 执行diy-part2.sh
-      run: |
-        cd immortalwrt
-        bash ../diy-part2.sh
+#    - name: Run DIY part 1 (编译前)
+#      run: |
+#        bash ../sh/diy-part1.sh
 
     - name: 开始编译
       run: |
         cd immortalwrt
+        make clean
         make download -j8 || make download -j1 V=s
         make -j$(nproc)
 
-    - name: 上传固件到Release
-      uses: ncipollo/release-action@v1
+        
+#    - name: Run DIY part 2 (编译后)
+#      run: |
+#        bash ../sh/diy-part2.sh
+
+        
+    - name: 按照时间戳重命名
+      run: |
+        # 获取当前日期时间
+        DATE=$(date +"%Y%m%d%H%M%S")
+        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+        NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
+        # 重命名固件
+        mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
+        echo "Renamed firmware to: $NEW_FIRMWARE_NAME"
+
+    - name: 上传到releases
+      uses: actions/upload-artifact@v2
       with:
-        artifacts: "immortalwrt/bin/targets/**/immortalwrt-*.img.gz"
-        tag: "latest"
-        allowUpdates: true
+        name: firmware
+        path: "bin/targets/armvirt/64/${NEW_FIRMWARE_NAME}"
+        retention-days: 5
+        if-no-files-found: error
