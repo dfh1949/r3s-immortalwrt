@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: 检出仓库
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: 准备编译环境
       run: |
@@ -66,15 +66,6 @@ jobs:
 #      run: |
 #        bash ../sh/diy-part2.sh
 
-    - name: 检查文件
-      run: |
-        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
-        if [ ! -f "$FIRMWARE_PATH" ]; then
-          echo "Firmware file not found!"
-          exit 1
-        else
-          echo "Firmware file found: $FIRMWARE_PATH"
-        fi
 
     - name: 按照时间戳重命名
       run: |
