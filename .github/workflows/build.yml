@@ -3,13 +3,14 @@ name: Build ImmortalWrt for R3S
 on:
   schedule:
     - cron: '0 0 * * 0' # 每周日凌晨12点触发编译
-workflow_dispatch:      # 允许手动触发编译
+  workflow_dispatch:
   inputs:
     trigger:
       description: '点击按钮触发编译'
       required: true
       default: 'true'
-      label: '编译'  # 这里设置按钮显示的中文名称
+      label: '编译'
+
 
 
 jobs:
