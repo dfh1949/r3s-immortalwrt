@@ -43,7 +43,9 @@ jobs:
     - name: 恢复diffconfig
       run: |
         cd immortalwrt/
-        cp -r ../config/.config >> .config
+        cp -r ../config/.config  .config
+        ./scripts/diffconfig.sh > diffconfig
+        cat diffconfig
 
     - name: Overwrite kernel config
       run: |
@@ -58,7 +60,6 @@ jobs:
     - name: 下载
       run: |
         cd immortalwrt/
-        make clean
         make download -j8 
 
     - name: 开始编译
