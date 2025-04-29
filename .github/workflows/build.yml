@@ -43,7 +43,7 @@ jobs:
     - name: 恢复diffconfig
       run: |
         cd immortalwrt/
-        cat ../config/.config >> .config
+        cp -r ../config/.config >> .config
 
     - name: Overwrite kernel config
       run: |
