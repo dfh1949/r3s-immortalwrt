@@ -46,6 +46,7 @@ jobs:
         cd immortalwrt/
         cp -r ../config/diffconfig  .config
         cat .config
+        make defconfig
 
     - name: Overwrite kernel config
       run: |
