@@ -80,9 +80,9 @@ jobs:
       run: |
         cd immortalwrt
         DATE=$(date +"%Y%m%d%H%M%S")
-        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+        FIRMWARE_PATH="bin/targets/rockchip/armv8/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
         NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
-        mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
+        mv "$FIRMWARE_PATH" "bin/targets/rockchip/armv8/$NEW_FIRMWARE_NAME"
         echo "NEW_FIRMWARE_NAME=${NEW_FIRMWARE_NAME}" >> $GITHUB_ENV
 
     - name: 上传固件
