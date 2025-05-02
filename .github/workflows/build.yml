@@ -10,83 +10,77 @@ on:
         description: '手动编译'
         required: true
         default: 'true'
-
+        
 jobs:
   build:
     runs-on: ubuntu-24.04
 
-
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v4
 
-    - name: 准备编译环境
+    - name: 清理空间释放磁盘
       run: |
-        sudo apt update -y
-        sudo apt full-upgrade -y
-        sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
-          bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
-          g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
-          libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \
-          libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano \
-          ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
-          python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
-          upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd axel aria2 -y
-        sudo apt autoremove -y
+        echo "Before cleanup:"
+        df -h
+        sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY"
+        echo "After cleanup:"
+        df -h
+
+    - name: 安装依赖
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential clang flex bison g++ gawk \
+          gcc-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
 
     - name: 克隆 ImmortalWrt 源码
       run: |
         git clone https://github.com/immortalwrt/immortalwrt.git
-        cd immortalwrt/
+        cd immortalwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: 恢复diffconfig
+    - name: 缓存 dl 文件夹
+      uses: actions/cache@v4
+      with:
+        path: immortalwrt/dl
+        key: ${{ runner.os }}-immortalwrt-dl-${{ hashFiles('immortalwrt/feeds.conf.default') }}
+        restore-keys: |
+          ${{ runner.os }}-immortalwrt-dl-
+
+    - name: 应用 diffconfig
       run: |
-        cd immortalwrt/
-        cp -r ../config/diffconfig  .config
-        cat .config
+        cd immortalwrt
+        cp -r config/diffconfig .config
         make defconfig
 
-    - name: Overwrite kernel config
+    - name: 替换内核配置
       run: |
-        cd immortalwrt/
-        # 注意根据你的设备实际修改路径
-        cp -r ../config/config-6.6 target/linux/rockchip/armv8/config-6.6
+        cp -r config/config-6.6 immortalwrt/target/linux/rockchip/armv8/config-6.6
 
-#    - name: Run DIY part 1 (编译前)
-#      run: |
-#        bash ../sh/diy-part1.sh
-
-    - name: 下载
+    - name: 下载依赖
       run: |
-        cd immortalwrt/
-        make download -j8 
+        cd immortalwrt
+        make download -j8
 
-    - name: 开始编译
+    - name: 编译固件
       run: |
-        cd immortalwrt/
-        make -j8 V=s
+        cd immortalwrt
+        make -j$(nproc) V=s
 
-#    - name: Run DIY part 2 (编译后)
-#      run: |
-#        bash ../sh/diy-part2.sh
-
-
-    - name: 按照时间戳重命名
+    - name: 重命名输出文件
       run: |
-         DATE=$(date +"%Y%m%d%H%M%S")
-         FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
-         NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
-         mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
-         echo "Renamed firmware to: $NEW_FIRMWARE_NAME"
-    
-    
-    - name: 上传重命名后的固件
-      uses: actions/upload-artifact@main
+        cd immortalwrt
+        DATE=$(date +"%Y%m%d%H%M%S")
+        FIRMWARE_PATH="bin/targets/armvirt/64/immortalwrt-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+        NEW_FIRMWARE_NAME="${DATE}-r3s-squashfs-sysupgrade.img.gz"
+        mv "$FIRMWARE_PATH" "bin/targets/armvirt/64/$NEW_FIRMWARE_NAME"
+        echo "NEW_FIRMWARE_NAME=${NEW_FIRMWARE_NAME}" >> $GITHUB_ENV
+
+    - name: 上传固件
+      uses: actions/upload-artifact@v4
       with:
         name: firmware
-        path: "bin/targets/armvirt/64/${NEW_FIRMWARE_NAME}"
+        path: "immortalwrt/bin/targets/armvirt/64/${{ env.NEW_FIRMWARE_NAME }}"
         retention-days: 5
         if-no-files-found: error
-
