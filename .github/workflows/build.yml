@@ -58,7 +58,8 @@ jobs:
     - name: 应用 diffconfig
       run: |
         ls -a
-        cp -r config/diffconfig .config
+        cd immortalwrt
+        cp -r ../config/diffconfig .config
         make defconfig
 
     - name: 替换内核配置
